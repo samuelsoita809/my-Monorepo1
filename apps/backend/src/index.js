@@ -4,6 +4,7 @@ import cors from "cors";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { initializeDatabase } from "./db/init.js";
+import { analyticsMiddleware } from "./middleware/analytics.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,6 +24,7 @@ initializeDatabase();
 
 app.use(cors());
 app.use(express.json());
+app.use(analyticsMiddleware);
 
 // Routes
 app.use(`/api/${apiVersion}`, healthRoutes);
