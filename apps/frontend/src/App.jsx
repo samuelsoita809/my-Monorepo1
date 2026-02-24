@@ -1,103 +1,147 @@
-import { useState, useEffect } from 'react';
-import { delay } from '@inventory/shared';
+import React, { useState, useEffect } from 'react';
 import { dashboardConfig } from './config/dashboard.config';
+import MultiStepForm from './components/Inventory/MultiStepForm';
+
+// Slot Injection: Step Components
+const StepInfo = ({ onNext, data, onCancel }) => (
+    <form onSubmit={(e) => { e.preventDefault(); onNext({ name: e.target.name.value, sku: e.target.sku.value }); }}>
+        <h3 className="text-xl font-bold mb-4">Product Identity</h3>
+        <input name="name" defaultValue={data.name} placeholder="Product Name" required className="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mb-4" />
+        <input name="sku" defaultValue={data.sku} placeholder="SKU (e.g. WH-001)" required className="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mb-8" />
+        <div className="flex space-x-4">
+            <button type="button" onClick={onCancel} className="flex-1 p-3 text-slate-400 hover:text-white transition-colors">Cancel</button>
+            <button type="submit" className="flex-1 bg-cyan-600 p-3 rounded-xl font-bold hover:bg-cyan-500 transition-all">Next</button>
+        </div>
+    </form>
+);
+
+const StepStock = ({ onNext, onBack, data }) => (
+    <form onSubmit={(e) => { e.preventDefault(); onNext({ price: parseFloat(e.target.price.value), stock: parseInt(e.target.stock.value) }); }}>
+        <h3 className="text-xl font-bold mb-4">Quantity & Value</h3>
+        <input name="price" type="number" step="0.01" defaultValue={data.price} placeholder="Price ($)" required className="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mb-4" />
+        <input name="stock" type="number" defaultValue={data.stock} placeholder="Initial Stock" required className="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mb-8" />
+        <div className="flex space-x-4">
+            <button type="button" onClick={onBack} className="flex-1 p-3 text-slate-400">Back</button>
+            <button type="submit" className="flex-1 bg-cyan-600 p-3 rounded-xl font-bold">Review</button>
+        </div>
+    </form>
+);
+
+const StepSummary = ({ data, onNext, onBack }) => (
+    <div>
+        <h3 className="text-xl font-bold mb-4 text-emerald-400">Review Product</h3>
+        <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-700 mb-8 space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-slate-500">Name</span><span>{data.name}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">SKU</span><span>{data.sku}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Price</span><span>${data.price}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Stock</span><span>{data.stock}</span></div>
+        </div>
+        <div className="flex space-x-4">
+            <button type="button" onClick={onBack} className="flex-1 p-3 text-slate-400">Back</button>
+            <button onClick={() => onNext({})} className="flex-1 bg-emerald-600 p-3 rounded-xl font-bold">Confirm & Add</button>
+        </div>
+    </div>
+);
 
 const App = () => {
+    const [showOnboarding, setShowOnboarding] = useState(false);
     const [healthStatus, setHealthStatus] = useState('Checking...');
-    const [serverTimestamp, setServerTimestamp] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const steps = [
+        { id: 'info', title: 'Identity', component: StepInfo },
+        { id: 'stock', title: 'Values', component: StepStock },
+        { id: 'summary', title: 'Review', component: StepSummary },
+    ];
 
     const trackEvent = (signal, action, payload = {}) => {
         console.log(`[ANALYTICS] ${signal}: ${action}`, payload);
-        // In Level 2, we would send this to the BE
     };
 
     useEffect(() => {
         trackEvent('PAGE_VIEW', 'DASHBOARD_LOAD');
-
         const fetchData = async () => {
-            setIsLoading(true);
             try {
-                await delay(300);
                 const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
-
                 const healthRes = await fetch(`${apiUrl}/health`);
                 const healthData = await healthRes.json();
-                setHealthStatus(healthData.status === 'ok' ? 'System Online ⚡' : 'System Degraded ⚠️');
-                setServerTimestamp(healthData.timestamp);
-            } catch (error) {
-                setHealthStatus('Backend Offline 🔴');
-            } finally {
-                setIsLoading(false);
-            }
+                setHealthStatus(healthData.status === 'ok' ? 'Online' : 'Warning');
+            } catch (err) { setHealthStatus('Offline'); }
+            setIsLoading(false);
         };
-
         fetchData();
     }, []);
 
+    const handleOnboardingComplete = async (data) => {
+        trackEvent('FUNNEL_COMPLETED', 'PRODUCT_ONBOARDING', data);
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
+            const res = await fetch(`${apiUrl}/products`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            if (!res.ok) throw new Error('Failed to create');
+            alert('Product created successfully!');
+            setShowOnboarding(false);
+        } catch (err) {
+            alert('Error: ' + err.message);
+            trackEvent('STEP_FAILED', 'PRODUCT_ONBOARDING_SUBMIT', { error: err.message });
+        }
+    };
+
     return (
-        <div className="min-h-screen flex flex-col items-center p-6 text-slate-100">
-            <div className="max-w-6xl w-full">
-                <header className="mb-12 flex justify-between items-end">
+        <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col items-center selection:bg-cyan-500/30">
+            <div className="max-w-6xl w-full p-6 lg:p-12">
+                <header className="flex justify-between items-center mb-20 animate-in fade-in slide-in-from-top-4 duration-700">
                     <div>
-                        <h1 className="text-5xl font-extrabold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-500">
+                        <h1 className="text-4xl font-extrabold tracking-tighter sm:text-6xl bg-clip-text text-transparent bg-gradient-to-br from-white to-slate-500">
                             {dashboardConfig.title}
                         </h1>
-                        <p className="text-slate-400 font-light flex items-center space-x-2">
-                            <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-                            <span>{dashboardConfig.version} - Intermediate Mastery</span>
+                        <p className="mt-2 text-slate-500 font-medium flex items-center space-x-2">
+                            <span className={`w-2 h-2 rounded-full ${healthStatus === 'Online' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></span>
+                            <span>{healthStatus} • V{dashboardConfig.version}</span>
                         </p>
                     </div>
-
                     <button
-                        onClick={() => trackEvent('BUTTON_CLICK', 'REFRESH_DATA')}
-                        className="glass-card px-6 py-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-all font-medium text-sm"
+                        onClick={() => { setShowOnboarding(true); trackEvent('STEP_STARTED', 'PRODUCT_ONBOARDING'); }}
+                        className="group relative px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                     >
-                        Refresh Hub
+                        New Product
                     </button>
                 </header>
 
-                <main className="w-full">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        {dashboardConfig.widgets.map(widget => (
-                            <div key={widget.id} className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800/50 relative overflow-hidden group">
-                                <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">
-                                    {widget.title}
-                                </h3>
-                                {widget.id === 'total_inventory' && (
-                                    <div className="text-4xl font-mono text-white">0 <span className="text-xs text-slate-600 font-sans">ITEMS</span></div>
-                                )}
-                                {widget.id === 'system_health' && (
-                                    <div className="text-sm font-medium">{healthStatus}</div>
-                                )}
-                                {widget.id === 'environment' && (
-                                    <div className="text-sm font-mono text-slate-200 uppercase tracking-tighter bg-white/5 py-1 px-3 rounded inline-block border border-white/10">
-                                        {import.meta.env.VITE_APP_ENV || 'Development'}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                {showOnboarding && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+                        <MultiStepForm
+                            steps={steps}
+                            onComplete={handleOnboardingComplete}
+                            onCancel={() => setShowOnboarding(false)}
+                        />
                     </div>
+                )}
 
-                    <h2 className="text-2xl font-bold text-slate-200 flex items-center space-x-3 mt-12">
-                        <span>System Activity</span>
-                        <div className="h-[1px] flex-1 bg-gradient-to-r from-slate-800 to-transparent"></div>
-                    </h2>
-
-                    {isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-20">
-                            <div className="w-12 h-12 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
+                <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {dashboardConfig.widgets.map((widget, i) => (
+                        <div
+                            key={widget.id}
+                            className={`glass-card p-8 rounded-[2rem] border border-white/5 group hover:border-white/10 transition-all duration-500 ${i === 0 ? 'lg:col-span-2' : ''}`}
+                        >
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
+                                {widget.title}
+                            </h3>
+                            <div className="flex items-center space-x-4">
+                                <div className={`p-4 rounded-2xl bg-${widget.color}-500/10 text-${widget.color}-400`}>
+                                    {/* Placeholder for Icons */}
+                                    ◈
+                                </div>
+                                <div className="text-2xl font-semibold">
+                                    {widget.id === 'total_inventory' ? '0 items' : (widget.id === 'system_health' ? healthStatus : 'Production')}
+                                </div>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="py-12 text-center text-slate-500 italic glass-card rounded-2xl border border-slate-800/50 mt-8">
-                            Last encrypted sync: {serverTimestamp ? new Date(serverTimestamp).toLocaleTimeString() : 'Pending'}
-                        </div>
-                    )}
+                    ))}
                 </main>
-
-                <footer className="mt-20 py-8 w-full border-t border-slate-800/50 flex justify-between items-center text-[10px] text-slate-500 uppercase tracking-widest text-center">
-                    <div>Built by <span className="text-slate-300 font-bold">Antigravity</span> - Intentional Engineering &copy; 2026</div>
-                </footer>
             </div>
         </div>
     );
