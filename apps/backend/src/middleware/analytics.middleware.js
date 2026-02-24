@@ -11,18 +11,22 @@ export const analyticsMiddleware = async (req, res, next) => {
 
     // 1. Emit REQUEST_RECEIVED
     try {
-        await db.insert(analyticsEvents).values({
-            signal: EVENTS.REQUEST_RECEIVED,
-            action: `${req.method} ${req.path}`,
-            payload: {
-                ip: req.ip,
-                userAgent: req.get('user-agent'),
-                query: req.query
-            },
-            timestamp: new Date()
-        });
+        if (process.env.NODE_ENV !== 'test') {
+            await db.insert(analyticsEvents).values({
+                signal: EVENTS.REQUEST_RECEIVED,
+                action: `${req.method} ${req.path}`,
+                payload: {
+                    ip: req.ip,
+                    userAgent: req.get('user-agent'),
+                    query: req.query
+                },
+                timestamp: new Date()
+            });
+        }
     } catch (err) {
-        console.error("Failed to log REQUEST_RECEIVED analytics", err);
+        if (process.env.NODE_ENV !== 'test') {
+            console.error("Failed to log REQUEST_RECEIVED analytics", err);
+        }
     }
 
     // Hook into response finish to track success/error
@@ -31,26 +35,32 @@ export const analyticsMiddleware = async (req, res, next) => {
         const signal = res.statusCode >= 400 ? EVENTS.REQUEST_ERROR : EVENTS.REQUEST_SUCCESS;
 
         try {
-            await db.insert(analyticsEvents).values({
-                signal,
-                action: `${req.method} ${req.path}`,
-                payload: {
-                    statusCode: res.statusCode,
-                    method: req.method,
-                    path: req.path
-                },
-                latency,
-                timestamp: new Date()
-            });
+            if (process.env.NODE_ENV !== 'test') {
+                await db.insert(analyticsEvents).values({
+                    signal,
+                    action: `${req.method} ${req.path}`,
+                    payload: {
+                        statusCode: res.statusCode,
+                        method: req.method,
+                        path: req.path
+                    },
+                    latency,
+                    timestamp: new Date()
+                });
+            }
 
-            // Also log to console for visibility
-            console.log(createLogSignal(signal, {
-                path: req.path,
-                statusCode: res.statusCode,
-                latency: `${latency}ms`
-            }));
+            // Also log to console for visibility (except in tests to keep output clean)
+            if (process.env.NODE_ENV !== 'test') {
+                console.log(createLogSignal(signal, {
+                    path: req.path,
+                    statusCode: res.statusCode,
+                    latency: `${latency}ms`
+                }));
+            }
         } catch (err) {
-            console.error("Failed to log post-request analytics", err);
+            if (process.env.NODE_ENV !== 'test') {
+                console.error("Failed to log post-request analytics", err);
+            }
         }
     });
 

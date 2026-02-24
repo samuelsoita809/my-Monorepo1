@@ -14,6 +14,7 @@ const envPath = join(__dirname, '..', `.env.${process.env.NODE_ENV || 'developme
 dotenv.config({ path: envPath });
 
 import healthRoutes from "./routes/health.routes.js";
+import productRoutes from "./routes/product.routes.js";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -27,7 +28,8 @@ app.use(express.json());
 app.use(analyticsMiddleware);
 
 // Routes
-app.use(`/api/${apiVersion}`, healthRoutes);
+app.use(`/api/${apiVersion}/health`, healthRoutes);
+app.use(`/api/${apiVersion}/products`, productRoutes);
 
 const isMain = process.argv[1] === __filename;
 if (isMain) {
