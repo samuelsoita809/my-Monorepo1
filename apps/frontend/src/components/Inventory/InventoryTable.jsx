@@ -1,5 +1,3 @@
-import React from 'react';
-
 const InventoryTable = ({ items }) => {
     return (
         <div className="overflow-x-auto glass-card rounded-2xl border border-slate-800/50 mt-8">

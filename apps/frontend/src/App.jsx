@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { EVENTS, delay } from '@inventory/shared';
-import InventoryTable from './components/Inventory/InventoryTable';
+import { useState, useEffect } from 'react';
+import { delay } from '@inventory/shared';
 
 const App = () => {
     const [healthStatus, setHealthStatus] = useState('Checking...');
     const [serverTimestamp, setServerTimestamp] = useState(null);
-    const [inventory, setInventory] = useState([]);
+    const [inventory] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -20,13 +19,6 @@ const App = () => {
                 const healthData = await healthRes.json();
                 setHealthStatus(healthData.status === 'ok' ? 'System Online ⚡' : 'System Degraded ⚠️');
                 setServerTimestamp(healthData.timestamp);
-
-                // Fetch inventory
-                const inventoryRes = await fetch(`${apiUrl}/inventory`);
-                if (inventoryRes.ok) {
-                    const inventoryData = await inventoryRes.json();
-                    setInventory(inventoryData);
-                }
             } catch (error) {
                 setHealthStatus('Backend Offline 🔴');
             } finally {
@@ -100,7 +92,9 @@ const App = () => {
                             <p className="text-slate-500 animate-pulse font-mono text-xs">Accessing encrypted archives...</p>
                         </div>
                     ) : (
-                        <InventoryTable items={inventory} />
+                        <div className="py-12 text-center text-slate-500 italic glass-card rounded-2xl border border-slate-800/50 mt-8">
+                            No items found in the inventory system.
+                        </div>
                     )}
                 </main>
 
