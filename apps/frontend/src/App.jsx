@@ -46,7 +46,6 @@ const StepSummary = ({ data, onNext, onBack }) => (
 const App = () => {
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [healthStatus, setHealthStatus] = useState('Checking...');
-    const [isLoading, setIsLoading] = useState(true);
 
     const steps = [
         { id: 'info', title: 'Identity', component: StepInfo },
@@ -67,7 +66,6 @@ const App = () => {
                 const healthData = await healthRes.json();
                 setHealthStatus(healthData.status === 'ok' ? 'Online' : 'Warning');
             } catch (err) { setHealthStatus('Offline'); }
-            setIsLoading(false);
         };
         fetchData();
     }, []);
@@ -130,14 +128,11 @@ const App = () => {
                             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
                                 {widget.title}
                             </h3>
-                            <div className="flex items-center space-x-4">
-                                <div className={`p-4 rounded-2xl bg-${widget.color}-500/10 text-${widget.color}-400`}>
-                                    {/* Placeholder for Icons */}
-                                    ◈
-                                </div>
-                                <div className="text-2xl font-semibold">
-                                    {widget.id === 'total_inventory' ? '0 items' : (widget.id === 'system_health' ? healthStatus : 'Production')}
-                                </div>
+                            <div className="py-12 text-center text-slate-500 italic glass-card rounded-2xl border border-slate-800/50 mt-8">
+                                System optimized for high-throughput inventory management
+                            </div>
+                            <div className="text-2xl font-semibold">
+                                {widget.id === 'total_inventory' ? '0 items' : (widget.id === 'system_health' ? healthStatus : 'Production')}
                             </div>
                         </div>
                     ))}

@@ -20,10 +20,10 @@ export const validate = (schema) => async (req, res, next) => {
 
         next();
     } catch (error) {
-        const errorDetails = error.errors.map(err => ({
+        const errorDetails = error.errors?.map(err => ({
             path: err.path.join('.'),
             message: err.message
-        }));
+        })) || [{ path: 'unknown', message: error.message }];
 
         console.error(createLogSignal(EVENTS.REQUEST_ERROR, {
             action: "VALIDATION_FAILED",
