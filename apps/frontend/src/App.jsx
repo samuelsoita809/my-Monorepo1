@@ -2,43 +2,59 @@ import React, { useState, useEffect } from 'react';
 import { dashboardConfig } from './config/dashboard.config';
 import MultiStepForm from './components/Inventory/MultiStepForm';
 
-// Slot Injection: Step Components
+// Step components simplified for light-themed modal card
 const StepInfo = ({ onNext, data, onCancel }) => (
     <form onSubmit={(e) => { e.preventDefault(); onNext({ name: e.target.name.value, sku: e.target.sku.value }); }}>
-        <h3 className="text-xl font-bold mb-4">Product Identity</h3>
-        <input name="name" defaultValue={data.name} placeholder="Product Name" required className="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mb-4" />
-        <input name="sku" defaultValue={data.sku} placeholder="SKU (e.g. WH-001)" required className="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mb-8" />
-        <div className="flex space-x-4">
-            <button type="button" onClick={onCancel} className="flex-1 p-3 text-slate-400 hover:text-white transition-colors">Cancel</button>
-            <button type="submit" className="flex-1 bg-cyan-600 p-3 rounded-xl font-bold hover:bg-cyan-500 transition-all">Next</button>
+        <h3 className="text-2xl font-black mb-6 text-slate-900 border-b-4 border-slate-900 pb-2 inline-block">Product Identity</h3>
+        <div className="space-y-6">
+            <div>
+                <label htmlFor="name">PRODUCT NAME</label>
+                <input id="name" name="name" defaultValue={data.name} placeholder="e.g. NVIDIA H100 GPU" required className="input-field" />
+            </div>
+            <div>
+                <label htmlFor="sku">SKU IDENTIFIER</label>
+                <input id="sku" name="sku" defaultValue={data.sku} placeholder="e.g. WH-GPU-001" required className="input-field" />
+            </div>
+        </div>
+        <div className="flex space-x-4 mt-10">
+            <button type="button" onClick={onCancel} className="flex-1 py-3 text-slate-500 font-black tracking-widest hover:text-red-500 transition-colors">CANCEL</button>
+            <button type="submit" className="flex-1 system-button-primary uppercase tracking-widest">Next Step</button>
         </div>
     </form>
 );
 
 const StepStock = ({ onNext, onBack, data }) => (
     <form onSubmit={(e) => { e.preventDefault(); onNext({ price: parseFloat(e.target.price.value), stock: parseInt(e.target.stock.value) }); }}>
-        <h3 className="text-xl font-bold mb-4">Quantity & Value</h3>
-        <input name="price" type="number" step="0.01" defaultValue={data.price} placeholder="Price ($)" required className="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mb-4" />
-        <input name="stock" type="number" defaultValue={data.stock} placeholder="Initial Stock" required className="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl mb-8" />
-        <div className="flex space-x-4">
-            <button type="button" onClick={onBack} className="flex-1 p-3 text-slate-400">Back</button>
-            <button type="submit" className="flex-1 bg-cyan-600 p-3 rounded-xl font-bold">Review</button>
+        <h3 className="text-2xl font-black mb-6 text-slate-900 border-b-4 border-slate-900 pb-2 inline-block">Quantity & Value</h3>
+        <div className="space-y-6">
+            <div>
+                <label htmlFor="price">UNIT PRICE (USD)</label>
+                <input id="price" name="price" type="number" step="0.01" defaultValue={data.price} placeholder="0.00" required className="input-field" />
+            </div>
+            <div>
+                <label htmlFor="stock">INITIAL STOCK</label>
+                <input id="stock" name="stock" type="number" defaultValue={data.stock} placeholder="0" required className="input-field" />
+            </div>
+        </div>
+        <div className="flex space-x-4 mt-10">
+            <button type="button" onClick={onBack} className="flex-1 py-3 text-slate-500 font-black tracking-widest">BACK</button>
+            <button type="submit" className="flex-1 system-button-primary uppercase tracking-widest">Review</button>
         </div>
     </form>
 );
 
 const StepSummary = ({ data, onNext, onBack }) => (
     <div>
-        <h3 className="text-xl font-bold mb-4 text-emerald-400">Review Product</h3>
-        <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-700 mb-8 space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-slate-500">Name</span><span>{data.name}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">SKU</span><span>{data.sku}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">Price</span><span>${data.price}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">Stock</span><span>{data.stock}</span></div>
+        <h3 className="text-2xl font-black mb-6 text-emerald-700 border-b-4 border-emerald-700 pb-2 inline-block">Final Review</h3>
+        <div className="bg-emerald-50 p-6 rounded-xl border-2 border-emerald-200 mb-8 space-y-4">
+            <div className="flex justify-between items-center border-b border-emerald-100 pb-2"><span className="text-emerald-900 font-bold text-xs uppercase">Product</span><span className="font-black text-slate-900">{data.name}</span></div>
+            <div className="flex justify-between items-center border-b border-emerald-100 pb-2"><span className="text-emerald-900 font-bold text-xs uppercase">SKU</span><span className="font-black text-slate-900">{data.sku}</span></div>
+            <div className="flex justify-between items-center border-b border-emerald-100 pb-2"><span className="text-emerald-900 font-bold text-xs uppercase">Price</span><span className="font-black text-emerald-700 text-xl">${data.price}</span></div>
+            <div className="flex justify-between items-center"><span className="text-emerald-900 font-bold text-xs uppercase">Stock</span><span className="font-black text-slate-900">{data.stock} units</span></div>
         </div>
         <div className="flex space-x-4">
-            <button type="button" onClick={onBack} className="flex-1 p-3 text-slate-400">Back</button>
-            <button onClick={() => onNext({})} className="flex-1 bg-emerald-600 p-3 rounded-xl font-bold">Confirm & Add</button>
+            <button type="button" onClick={onBack} className="flex-1 py-3 text-slate-500 font-black tracking-widest">BACK</button>
+            <button onClick={() => onNext({})} className="flex-1 bg-emerald-600 text-white font-black py-4 rounded-lg hover:bg-emerald-700 transition-all shadow-lg uppercase tracking-widest">Confirm & Add</button>
         </div>
     </div>
 );
@@ -53,12 +69,7 @@ const App = () => {
         { id: 'summary', title: 'Review', component: StepSummary },
     ];
 
-    const trackEvent = (signal, action, payload = {}) => {
-        console.log(`[ANALYTICS] ${signal}: ${action}`, payload);
-    };
-
     useEffect(() => {
-        trackEvent('PAGE_VIEW', 'DASHBOARD_LOAD');
         const fetchData = async () => {
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
@@ -71,7 +82,6 @@ const App = () => {
     }, []);
 
     const handleOnboardingComplete = async (data) => {
-        trackEvent('FUNNEL_COMPLETED', 'PRODUCT_ONBOARDING', data);
         try {
             const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
             const res = await fetch(`${apiUrl}/products`, {
@@ -79,64 +89,71 @@ const App = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
-            if (!res.ok) throw new Error('Failed to create');
-            alert('Product created successfully!');
+            if (!res.ok) throw new Error('Failed to create product');
+            alert('Success! Product registered in the database.');
             setShowOnboarding(false);
         } catch (err) {
-            alert('Error: ' + err.message);
-            trackEvent('STEP_FAILED', 'PRODUCT_ONBOARDING_SUBMIT', { error: err.message });
+            alert('API Error: ' + err.message);
         }
     };
 
     return (
-        <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col items-center selection:bg-cyan-500/30">
-            <div className="max-w-6xl w-full p-6 lg:p-12">
-                <header className="flex justify-between items-center mb-20 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="min-h-screen bg-slate-100 font-sans p-6 md:p-12 lg:p-20">
+            <div className="max-w-6xl mx-auto">
+                <header className="mb-16 border-b-8 border-slate-900 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end">
                     <div>
-                        <h1 className="text-4xl font-extrabold tracking-tighter sm:text-6xl bg-clip-text text-transparent bg-gradient-to-br from-white to-slate-500">
-                            {dashboardConfig.title}
+                        <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter uppercase italic">
+                            Inventory Cmd
                         </h1>
-                        <p className="mt-2 text-slate-500 font-medium flex items-center space-x-2">
-                            <span className={`w-2 h-2 rounded-full ${healthStatus === 'Online' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></span>
-                            <span>{healthStatus} • V{dashboardConfig.version}</span>
-                        </p>
+                        <div className="mt-4 flex items-center space-x-4">
+                            <span className={`px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest ${healthStatus === 'Online' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
+                                {healthStatus}
+                            </span>
+                            <span className="text-slate-400 font-bold text-xs uppercase tracking-widest">
+                                VER: {dashboardConfig.version}
+                            </span>
+                        </div>
                     </div>
                     <button
-                        onClick={() => { setShowOnboarding(true); trackEvent('STEP_STARTED', 'PRODUCT_ONBOARDING'); }}
-                        className="group relative px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                        onClick={() => setShowOnboarding(true)}
+                        className="mt-8 md:mt-0 system-button-primary text-xl px-12 py-5 shadow-[8px_8px_0_0_#0f172a] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
                     >
-                        New Product
+                        + REGISTER PRODUCT
                     </button>
                 </header>
 
                 {showOnboarding && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-                        <MultiStepForm
-                            steps={steps}
-                            onComplete={handleOnboardingComplete}
-                            onCancel={() => setShowOnboarding(false)}
-                        />
+                    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowOnboarding(false)}>
+                        <div className="w-full max-w-xl animate-in zoom-in duration-200">
+                            <MultiStepForm
+                                steps={steps}
+                                onComplete={handleOnboardingComplete}
+                                onCancel={() => setShowOnboarding(false)}
+                            />
+                        </div>
                     </div>
                 )}
 
-                <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {dashboardConfig.widgets.map((widget, i) => (
-                        <div
-                            key={widget.id}
-                            className={`glass-card p-8 rounded-[2rem] border border-white/5 group hover:border-white/10 transition-all duration-500 ${i === 0 ? 'lg:col-span-2' : ''}`}
-                        >
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
+                <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    {dashboardConfig.widgets.map((widget) => (
+                        <div key={widget.id} className="system-card flex flex-col justify-between min-h-[220px] transition-all hover:border-slate-900 hover:scale-[1.02]">
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
                                 {widget.title}
                             </h3>
-                            <div className="py-12 text-center text-slate-500 italic glass-card rounded-2xl border border-slate-800/50 mt-8">
-                                System optimized for high-throughput inventory management
+                            <div className="text-4xl font-black text-slate-900 break-words line-clamp-2">
+                                {widget.id === 'total_inventory' ? '0 UNITS' : (widget.id === 'system_health' ? healthStatus : 'PRIMARY NODE')}
                             </div>
-                            <div className="text-2xl font-semibold">
-                                {widget.id === 'total_inventory' ? '0 items' : (widget.id === 'system_health' ? healthStatus : 'Production')}
+                            <div className="mt-8 pt-4 border-t-2 border-slate-100 flex items-center justify-between">
+                                <span className="text-[10px] font-black text-slate-300 uppercase italic">status: verified</span>
+                                <span className="text-slate-900 text-xl font-black">→</span>
                             </div>
                         </div>
                     ))}
                 </main>
+
+                <footer className="mt-32 text-slate-300 text-xs font-black uppercase tracking-[0.5em] text-center italic">
+                    System architect mastery • high-visibility node
+                </footer>
             </div>
         </div>
     );
