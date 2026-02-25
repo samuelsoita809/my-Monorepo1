@@ -1,4 +1,4 @@
-const InventoryTable = ({ items, onDelete }) => {
+const InventoryTable = ({ items, onDelete, onEdit }) => {
     return (
         <div className="overflow-x-auto glass-card rounded-2xl border border-slate-800/50 mt-8">
             <table className="w-full text-left border-collapse">
@@ -30,12 +30,18 @@ const InventoryTable = ({ items, onDelete }) => {
                                     {item.category || 'General'}
                                 </span>
                             </td>
-                            <td className="px-6 py-4 text-right">
+                            <td className="px-6 py-4 text-right space-x-2">
                                 <button
                                     onClick={() => onDelete(item.id)}
                                     className="opacity-0 group-hover:opacity-100 transition-opacity bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 text-rose-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg"
                                 >
                                     Decommission
+                                </button>
+                                <button
+                                    onClick={() => onEdit(item)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/40 text-sky-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg"
+                                >
+                                    Modify
                                 </button>
                             </td>
                         </tr>

@@ -6,6 +6,7 @@ import { StepInfo, StepStock, StepSummary } from './components/Inventory/Registr
 
 // Lazy load the heavy form component
 const MultiStepForm = lazy(() => import('./components/Inventory/MultiStepForm'));
+const EditProductModal = lazy(() => import('./components/Inventory/EditProductModal'));
 
 // Performance: Custom loading state
 const LoadingScreen = () => (
@@ -17,6 +18,7 @@ const LoadingScreen = () => (
 const App = () => {
     const [products, setProducts] = useState([]);
     const [showOnboarding, setShowOnboarding] = useState(false);
+    const [editingProduct, setEditingProduct] = useState(null);
     const [healthStatus, setHealthStatus] = useState('Checking...');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -90,6 +92,22 @@ const App = () => {
         }
     };
 
+    const handleUpdateProduct = async (id, data) => {
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
+            const res = await fetch(`${apiUrl}/products/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            if (!res.ok) throw new Error('Update failed');
+            setEditingProduct(null);
+            fetchProducts();
+        } catch (err) {
+            alert('System Error: ' + err.message);
+        }
+    };
+
     const stats = {
         total_inventory: products.length,
         low_stock: products.filter(p => p.quantity < 5).length,
@@ -132,8 +150,19 @@ const App = () => {
                         products={products}
                         LoadingScreen={LoadingScreen}
                         onDelete={handleDeleteProduct}
+                        onEdit={setEditingProduct}
                     />
                 </main>
+
+                {editingProduct && (
+                    <Suspense fallback={<LoadingScreen />}>
+                        <EditProductModal
+                            product={editingProduct}
+                            onSave={handleUpdateProduct}
+                            onCancel={() => setEditingProduct(null)}
+                        />
+                    </Suspense>
+                )}
 
                 <footer className="mt-20 pb-8 text-center opacity-40">
                     <p className="text-slate-600 text-[9px] font-black uppercase tracking-[0.5em]">
