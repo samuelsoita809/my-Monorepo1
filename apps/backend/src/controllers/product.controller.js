@@ -16,6 +16,10 @@ export const ProductController = {
             res.status(201).json(product);
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
+                console.warn(createLogSignal(EVENTS.ABUSE_TRIGGERED, {
+                    reason: "DUPLICATE_SKU_ATTEMPT",
+                    sku: req.validatedBody?.sku
+                }));
                 return res.status(409).json({ message: "SKU already exists" });
             }
             next(error);

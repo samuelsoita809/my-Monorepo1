@@ -1,6 +1,7 @@
 import "./env.js";
 import express from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { initializeDatabase } from "./db/init.js";
 import { analyticsMiddleware } from "./middleware/analytics.middleware.js";
 import { EVENTS, createLogSignal } from "@inventory/shared";
@@ -13,6 +14,36 @@ const app = express();
 const port = process.env.PORT || 3001;
 const apiVersion = process.env.API_VERSION || 'v1';
 
+// Security: Global Rate Limiter
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  message: "Too many requests from this IP, please try again later",
+  handler: (req, res, _next, options) => {
+    console.warn(createLogSignal(EVENTS.ABUSE_TRIGGERED, {
+      reason: "GLOBAL_RATE_LIMIT",
+      ip: req.ip,
+      path: req.path
+    }));
+    res.status(options.statusCode).send(options.message);
+  }
+});
+
+// Security: Strict Limiter for Write Operations
+const writeLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 10 product registrations per minute
+  handler: (req, res, _next, options) => {
+    console.warn(createLogSignal(EVENTS.ABUSE_TRIGGERED, {
+      reason: "WRITE_RATE_LIMIT",
+      ip: req.ip,
+      path: req.path
+    }));
+    res.status(options.statusCode).send(options.message);
+  }
+});
+
+app.use(globalLimiter);
 app.use(cors());
 app.use(express.json());
 app.use(analyticsMiddleware);
@@ -20,7 +51,7 @@ app.use(analyticsMiddleware);
 // Standardized Route Mounting
 const apiRouter = express.Router();
 apiRouter.use('/health', healthRoutes);
-apiRouter.use('/products', productRoutes);
+apiRouter.use('/products', writeLimiter, productRoutes);
 
 app.use(`/api/${apiVersion}`, apiRouter);
 
