@@ -1,4 +1,5 @@
 import { ProductService } from "../services/product.service.js";
+import { EVENTS, createLogSignal } from "@inventory/shared";
 
 export const ProductController = {
     async list(req, res, next) {
