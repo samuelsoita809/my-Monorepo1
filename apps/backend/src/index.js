@@ -1,18 +1,9 @@
-import dotenv from "dotenv";
+import "./env.js";
 import express from "express";
 import cors from "cors";
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import { initializeDatabase } from "./db/init.js";
 import { analyticsMiddleware } from "./middleware/analytics.middleware.js";
 import { EVENTS, createLogSignal } from "@inventory/shared";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Load environment variables based on NODE_ENV
-const envPath = join(__dirname, '..', `.env.${process.env.NODE_ENV || 'development'}`);
-dotenv.config({ path: envPath });
 
 import healthRoutes from "./routes/health.routes.js";
 import productRoutes from "./routes/product.routes.js";
@@ -29,7 +20,7 @@ app.use(analyticsMiddleware);
 app.use(`/api/${apiVersion}/health`, healthRoutes);
 app.use(`/api/${apiVersion}/products`, productRoutes);
 
-const isMain = process.argv[1] === __filename;
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
   // Initialize DB Foundation ONLY when running as entry point
   initializeDatabase();
