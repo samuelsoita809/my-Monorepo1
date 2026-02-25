@@ -5,24 +5,24 @@ export const dashboardConfig = {
     widgets: [
         {
             id: "total_inventory",
-            title: "Stock Levels",
+            title: "Total Products",
             type: "stat",
             icon: "box",
-            color: "cyan"
-        },
-        {
-            id: "system_health",
-            title: "Network Status",
-            type: "status",
-            icon: "activity",
-            color: "emerald"
-        },
-        {
-            id: "environment",
-            title: "Active Node",
-            type: "badge",
-            icon: "shield",
             color: "slate"
+        },
+        {
+            id: "low_stock",
+            title: "Low Stock Alert",
+            type: "warning",
+            icon: "alert",
+            color: "rose"
+        },
+        {
+            id: "categories_count",
+            title: "Categories",
+            type: "stat",
+            icon: "tag",
+            color: "indigo"
         }
     ]
 };
