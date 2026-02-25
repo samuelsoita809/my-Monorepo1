@@ -69,8 +69,11 @@ const StepSummary = ({ data, onNext, onBack }) => (
     </div>
 );
 
+const ObservabilityDashboard = lazy(() => import('./components/Observability/ObservabilityDashboard'));
+
 const App = () => {
     const [showOnboarding, setShowOnboarding] = useState(false);
+    const [showObservability, setShowObservability] = useState(false);
     const [healthStatus, setHealthStatus] = useState('Checking...');
 
     const steps = [
@@ -95,6 +98,17 @@ const App = () => {
         };
         fetchData();
     }, []);
+
+    const handleSimulationFailure = async () => {
+        if (confirm("SYSTEM OWNER ALERT: Simulating critical backend failure will degrade the system. Proceed?")) {
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
+                // Trigger a special endpoint or just simulate locally for the demo
+                setHealthStatus('Degraded (Offline)');
+                alert("Simulated Failure complete. System currently in DEGRADED mode.");
+            } catch (err) { console.error(err); }
+        }
+    };
 
     const handleOnboardingComplete = async (data) => {
         try {
@@ -124,18 +138,37 @@ const App = () => {
                             <span className={`px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest ${healthStatus === 'Online' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
                                 {healthStatus}
                             </span>
-                            <span className="text-slate-400 font-bold text-xs uppercase tracking-widest">
-                                VER: {dashboardConfig.version}
+                            <span
+                                onClick={() => setShowObservability(!showObservability)}
+                                className="cursor-pointer text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-slate-900 transition-colors"
+                            >
+                                {showObservability ? '[ CLOSE HUB ]' : '[ OPEN OBSERVABILITY HUB ]'}
                             </span>
                         </div>
                     </div>
-                    <button
-                        onClick={() => setShowOnboarding(true)}
-                        className="mt-8 md:mt-0 system-button-primary text-xl px-12 py-5 shadow-[8px_8px_0_0_#0f172a] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-                    >
-                        + REGISTER PRODUCT
-                    </button>
+                    <div className="flex space-x-4 mt-8 md:mt-0">
+                        <button
+                            onClick={handleSimulationFailure}
+                            className="system-button-secondary text-xs px-6 py-5 uppercase tracking-widest border-2 border-slate-300 text-slate-400 hover:border-red-500 hover:text-red-500"
+                        >
+                            Simulate Failure
+                        </button>
+                        <button
+                            onClick={() => setShowOnboarding(true)}
+                            className="system-button-primary text-xl px-12 py-5 shadow-[8px_8px_0_0_#0f172a] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+                        >
+                            + REGISTER PRODUCT
+                        </button>
+                    </div>
                 </header>
+
+                {showObservability && (
+                    <div className="mb-16 animate-in slide-in-from-top duration-500">
+                        <Suspense fallback={<LoadingScreen />}>
+                            <ObservabilityDashboard />
+                        </Suspense>
+                    </div>
+                )}
 
                 {showOnboarding && (
                     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowOnboarding(false)}>
