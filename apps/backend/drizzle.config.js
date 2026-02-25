@@ -1,4 +1,8 @@
 import { defineConfig } from "drizzle-kit";
+import dotenv from "dotenv";
+import { join } from "path";
+
+dotenv.config({ path: join(process.cwd(), `.env.${process.env.NODE_ENV || 'development'}`) });
 
 export default defineConfig({
     schema: "./src/db/schema.js",

@@ -1,9 +1,23 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "./schema.js";
+import dotenv from "dotenv";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment variables based on NODE_ENV if not already loaded
+const envPath = join(__dirname, '../../', `.env.${process.env.NODE_ENV || 'development'}`);
+dotenv.config({ path: envPath });
 
 // Connection pool configuration
+<<<<<<< Updated upstream
 const connection = mysql.createPool({
+=======
+const connection = await mysql.createPool({
+>>>>>>> Stashed changes
     host: process.env.DB_HOST || "localhost",
     user: process.env.DB_USER || "user",
     password: process.env.DB_PASSWORD || "password",
