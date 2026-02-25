@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 
 const InventoryTable = lazy(() => import('../Inventory/InventoryTable'));
 
-export const AssetStream = ({ healthStatus, isLoading, products, LoadingScreen }) => (
+export const AssetStream = ({ healthStatus, isLoading, products, LoadingScreen, onDelete }) => (
     <section className="glass-panel rounded-3xl overflow-hidden border border-white/5 shadow-2xl w-full">
         <div className="px-8 py-6 border-b border-white/5 flex flex-row items-center justify-between bg-white/[0.02]">
             <h2 className="text-xl md:text-2xl font-black uppercase tracking-widest italic text-white/90 m-0 leading-none">Global Stream</h2>
@@ -18,7 +18,7 @@ export const AssetStream = ({ healthStatus, isLoading, products, LoadingScreen }
 
         <div className="p-2 md:p-6 bg-black/20 overflow-x-auto w-full">
             <Suspense fallback={<LoadingScreen />}>
-                {isLoading ? <LoadingScreen /> : <InventoryTable items={products} />}
+                {isLoading ? <LoadingScreen /> : <InventoryTable items={products} onDelete={onDelete} />}
             </Suspense>
         </div>
     </section>

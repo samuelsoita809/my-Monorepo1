@@ -76,6 +76,20 @@ const App = () => {
         }
     };
 
+    const handleDeleteProduct = async (id) => {
+        if (!window.confirm('Are you sure you want to decommission this asset?')) return;
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
+            const res = await fetch(`${apiUrl}/products/${id}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error('Decommissioning failed');
+            fetchProducts();
+        } catch (err) {
+            alert('System Error: ' + err.message);
+        }
+    };
+
     const stats = {
         total_inventory: products.length,
         low_stock: products.filter(p => p.quantity < 5).length,
@@ -112,7 +126,13 @@ const App = () => {
 
                 <main className="w-full max-w-5xl flex flex-col space-y-10 items-center justify-center mx-auto">
                     <StatsGrid stats={stats} />
-                    <AssetStream healthStatus={healthStatus} isLoading={isLoading} products={products} LoadingScreen={LoadingScreen} />
+                    <AssetStream
+                        healthStatus={healthStatus}
+                        isLoading={isLoading}
+                        products={products}
+                        LoadingScreen={LoadingScreen}
+                        onDelete={handleDeleteProduct}
+                    />
                 </main>
 
                 <footer className="mt-20 pb-8 text-center opacity-40">
