@@ -1,4 +1,4 @@
-const InventoryTable = ({ items }) => {
+const InventoryTable = ({ items, onDelete, onEdit }) => {
     return (
         <div className="overflow-x-auto glass-card rounded-2xl border border-slate-800/50 mt-8">
             <table className="w-full text-left border-collapse">
@@ -9,11 +9,12 @@ const InventoryTable = ({ items }) => {
                         <th className="px-6 py-4 text-center">Quantity</th>
                         <th className="px-6 py-4 text-right">Price</th>
                         <th className="px-6 py-4">Category</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/30">
                     {items.map((item) => (
-                        <tr key={item.id} className="hover:bg-white/5 transition-colors cursor-pointer group">
+                        <tr key={item.id} className="hover:bg-white/5 transition-colors group">
                             <td className="px-6 py-4 font-medium text-slate-200">{item.name}</td>
                             <td className="px-6 py-4 font-mono text-cyan-400/80 text-sm">{item.sku}</td>
                             <td className="px-6 py-4 text-center">
@@ -29,12 +30,28 @@ const InventoryTable = ({ items }) => {
                                     {item.category || 'General'}
                                 </span>
                             </td>
+                            <td className="px-6 py-4 text-right space-x-2">
+                                <button
+                                    onClick={() => onDelete(item.id)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 text-rose-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg"
+                                >
+                                    Decommission
+                                </button>
+                                <button
+                                    onClick={() => onEdit(item)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/40 text-sky-400 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg"
+                                >
+                                    Modify
+                                </button>
+                            </td>
                         </tr>
                     ))}
                     {items.length === 0 && (
                         <tr>
-                            <td colSpan="5" className="px-6 py-12 text-center text-slate-500 italic">
-                                No items found in the inventory system.
+                            <td colSpan="5" className="px-8 py-24 text-center">
+                                <div className="text-slate-600 font-black uppercase tracking-[0.5em] text-xs">
+                                    Node Stream Empty: Awaiting Asset Sync
+                                </div>
                             </td>
                         </tr>
                     )}
