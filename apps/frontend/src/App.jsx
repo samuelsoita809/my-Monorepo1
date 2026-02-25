@@ -1,6 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { dashboardConfig } from './config/dashboard.config';
-import MultiStepForm from './components/Inventory/MultiStepForm';
+import { EVENTS } from '@inventory/shared';
+
+// Lazy load the heavy form component
+const MultiStepForm = lazy(() => import('./components/Inventory/MultiStepForm'));
+
+// Performance: Custom loading state
+const LoadingScreen = () => (
+    <div className="flex flex-col items-center justify-center p-20 bg-slate-50 border-4 border-dashed border-slate-200 rounded-3xl animate-pulse">
+        <div className="text-slate-400 font-black tracking-widest uppercase">Initializing Layer...</div>
+    </div>
+);
 
 // Step components simplified for light-themed modal card
 const StepInfo = ({ onNext, data, onCancel }) => (
@@ -8,12 +18,12 @@ const StepInfo = ({ onNext, data, onCancel }) => (
         <h3 className="text-2xl font-black mb-6 text-slate-900 border-b-4 border-slate-900 pb-2 inline-block">Product Identity</h3>
         <div className="space-y-6">
             <div>
-                <label htmlFor="name">PRODUCT NAME</label>
-                <input id="name" name="name" defaultValue={data.name} placeholder="e.g. NVIDIA H100 GPU" required className="input-field" />
+                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest" htmlFor="name">PRODUCT NAME</label>
+                <input id="name" name="name" defaultValue={data.name} placeholder="e.g. NVIDIA H100 GPU" required className="input-field" aria-label="Product Name" />
             </div>
             <div>
-                <label htmlFor="sku">SKU IDENTIFIER</label>
-                <input id="sku" name="sku" defaultValue={data.sku} placeholder="e.g. WH-GPU-001" required className="input-field" />
+                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest" htmlFor="sku">SKU IDENTIFIER</label>
+                <input id="sku" name="sku" defaultValue={data.sku} placeholder="e.g. WH-GPU-001" required className="input-field" aria-label="SKU Identifier" />
             </div>
         </div>
         <div className="flex space-x-4 mt-10">
@@ -28,12 +38,12 @@ const StepStock = ({ onNext, onBack, data }) => (
         <h3 className="text-2xl font-black mb-6 text-slate-900 border-b-4 border-slate-900 pb-2 inline-block">Quantity & Value</h3>
         <div className="space-y-6">
             <div>
-                <label htmlFor="price">UNIT PRICE (USD)</label>
-                <input id="price" name="price" type="number" step="0.01" defaultValue={data.price} placeholder="0.00" required className="input-field" />
+                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest" htmlFor="price">UNIT PRICE (USD)</label>
+                <input id="price" name="price" type="number" step="0.01" defaultValue={data.price} placeholder="0.00" required className="input-field" aria-label="Unit Price" />
             </div>
             <div>
-                <label htmlFor="stock">INITIAL STOCK</label>
-                <input id="stock" name="stock" type="number" defaultValue={data.stock} placeholder="0" required className="input-field" />
+                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest" htmlFor="stock">INITIAL STOCK</label>
+                <input id="stock" name="stock" type="number" defaultValue={data.stock} placeholder="0" required className="input-field" aria-label="Initial Stock" />
             </div>
         </div>
         <div className="flex space-x-4 mt-10">
@@ -70,12 +80,17 @@ const App = () => {
     ];
 
     useEffect(() => {
+        const startTime = performance.now();
         const fetchData = async () => {
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
                 const healthRes = await fetch(`${apiUrl}/health`);
                 const healthData = await healthRes.json();
                 setHealthStatus(healthData.status === 'ok' ? 'Online' : 'Warning');
+
+                // Track Performance
+                const loadTime = performance.now() - startTime;
+                console.log(`[PERF] Frontend Latency: ${loadTime.toFixed(2)}ms`);
             } catch (err) { setHealthStatus('Offline'); }
         };
         fetchData();
@@ -90,7 +105,7 @@ const App = () => {
                 body: JSON.stringify(data),
             });
             if (!res.ok) throw new Error('Failed to create product');
-            alert('Success! Product registered in the database.');
+            alert('Success! Product registered.');
             setShowOnboarding(false);
         } catch (err) {
             alert('API Error: ' + err.message);
@@ -125,11 +140,13 @@ const App = () => {
                 {showOnboarding && (
                     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowOnboarding(false)}>
                         <div className="w-full max-w-xl animate-in zoom-in duration-200">
-                            <MultiStepForm
-                                steps={steps}
-                                onComplete={handleOnboardingComplete}
-                                onCancel={() => setShowOnboarding(false)}
-                            />
+                            <Suspense fallback={<LoadingScreen />}>
+                                <MultiStepForm
+                                    steps={steps}
+                                    onComplete={handleOnboardingComplete}
+                                    onCancel={() => setShowOnboarding(false)}
+                                />
+                            </Suspense>
                         </div>
                     </div>
                 )}
