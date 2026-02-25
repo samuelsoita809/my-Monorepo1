@@ -9,5 +9,6 @@ router.get("/", ProductController.list);
 router.post("/", validate(createProductSchema), ProductController.create);
 router.get("/:id", ProductController.getOne);
 router.patch("/:id", validate(updateProductSchema), ProductController.update);
+router.delete("/:id", ProductController.delete);
 
 export default router;

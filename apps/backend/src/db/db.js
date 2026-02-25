@@ -13,11 +13,7 @@ const envPath = join(__dirname, '../../', `.env.${process.env.NODE_ENV || 'devel
 dotenv.config({ path: envPath });
 
 // Connection pool configuration
-<<<<<<< Updated upstream
 const connection = mysql.createPool({
-=======
-const connection = await mysql.createPool({
->>>>>>> Stashed changes
     host: process.env.DB_HOST || "localhost",
     user: process.env.DB_USER || "user",
     password: process.env.DB_PASSWORD || "password",

@@ -36,5 +36,10 @@ export const ProductService = {
             .where(eq(products.id, parseInt(id)));
 
         return await this.getProductById(id);
+    },
+
+    async deleteProduct(id) {
+        return await db.delete(products)
+            .where(eq(products.id, parseInt(id)));
     }
 };

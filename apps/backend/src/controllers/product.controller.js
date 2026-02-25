@@ -48,5 +48,19 @@ export const ProductController = {
         } catch (error) {
             next(error);
         }
+    },
+
+    async delete(req, res, next) {
+        try {
+            const product = await ProductService.getProductById(req.params.id);
+            if (!product) {
+                return res.status(404).json({ message: "Product not found" });
+            }
+
+            await ProductService.deleteProduct(req.params.id);
+            res.status(204).end();
+        } catch (error) {
+            next(error);
+        }
     }
 };

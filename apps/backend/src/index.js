@@ -7,6 +7,8 @@ import { analyticsMiddleware } from "./middleware/analytics.middleware.js";
 import { EVENTS, createLogSignal } from "@inventory/shared";
 import healthRoutes from "./routes/health.routes.js";
 import productRoutes from "./routes/product.routes.js";
+import chaosRoutes from "./routes/chaos.routes.js";
+import { chaosMiddleware } from "./controllers/chaos.controller.js";
 
 import { fileURLToPath } from 'url';
 
@@ -47,11 +49,13 @@ app.use(globalLimiter);
 app.use(cors());
 app.use(express.json());
 app.use(analyticsMiddleware);
+app.use(chaosMiddleware);
 
 // Standardized Route Mounting
 const apiRouter = express.Router();
 apiRouter.use('/health', healthRoutes);
 apiRouter.use('/products', writeLimiter, productRoutes);
+apiRouter.use('/chaos', chaosRoutes);
 
 app.use(`/api/${apiVersion}`, apiRouter);
 
