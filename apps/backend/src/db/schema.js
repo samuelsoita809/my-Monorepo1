@@ -2,14 +2,14 @@ import { mysqlTable, serial, varchar, timestamp, decimal, int, json, mysqlEnum }
 
 // Level 1: Foundation
 export const messages = mysqlTable("messages", {
-    id: serial("id").primaryKey(),
+    id: int("id").primaryKey().autoincrement(),
     message: varchar("message", { length: 255 }).notNull(),
     createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Level 2: Feature Expansion & Layers
 export const users = mysqlTable("users", {
-    id: serial("id").primaryKey(),
+    id: int("id").primaryKey().autoincrement(),
     email: varchar("email", { length: 255 }).notNull().unique(),
     passwordHash: varchar("password_hash", { length: 255 }).notNull(),
     role: mysqlEnum("role", ["admin", "manager", "viewer"]).default("viewer"),
@@ -17,7 +17,7 @@ export const users = mysqlTable("users", {
 });
 
 export const products = mysqlTable("products", {
-    id: serial("id").primaryKey(),
+    id: int("id").primaryKey().autoincrement(),
     name: varchar("name", { length: 255 }).notNull(),
     sku: varchar("sku", { length: 100 }).notNull().unique(),
     price: decimal("price", { precision: 10, scale: 2 }).notNull(),
@@ -27,7 +27,7 @@ export const products = mysqlTable("products", {
 });
 
 export const orders = mysqlTable("orders", {
-    id: serial("id").primaryKey(),
+    id: int("id").primaryKey().autoincrement(),
     userId: int("user_id").references(() => users.id),
     totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
     status: mysqlEnum("status", ["pending", "completed", "cancelled"]).default("pending"),
@@ -36,7 +36,7 @@ export const orders = mysqlTable("orders", {
 
 // Level 2 & 3: Intentional Engineering & Observability
 export const analyticsEvents = mysqlTable("analytics_events", {
-    id: serial("id").primaryKey(),
+    id: int("id").primaryKey().autoincrement(),
     signal: varchar("signal", { length: 100 }).notNull(), // e.g., 'STEP_STARTED', 'REQUEST_SUCCESS'
     action: varchar("action", { length: 255 }).notNull(), // e.g., 'PRODUCT_ONBOARDING'
     payload: json("payload"), // Custom event data
