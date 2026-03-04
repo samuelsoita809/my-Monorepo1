@@ -9,7 +9,9 @@ const connection = mysql.createPool({
     user: process.env.DB_USER || "user",
     password: process.env.DB_PASSWORD || "password",
     database: process.env.DB_NAME || "inventory_db",
+    port: parseInt(process.env.DB_PORT || "3306"),
     multipleStatements: true,
+    ssl: process.env.DB_HOST?.includes("aivencloud.com") || (process.env.NODE_ENV === "production" && !process.env.DB_HOST?.includes("rlwy.net")) ? { rejectUnauthorized: false } : undefined,
 });
 
 // Handle pool errors to prevent process crashes

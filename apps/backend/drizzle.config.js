@@ -9,9 +9,9 @@ export default defineConfig({
     out: "./src/db/migrations",
     dialect: "mysql",
     dbCredentials: {
-        host: process.env.DB_HOST || "localhost",
-        user: process.env.DB_USER || "user",
-        password: process.env.DB_PASSWORD || "password",
-        database: process.env.DB_NAME || "inventory_db",
+        url: process.env.DATABASE_URL || `mysql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+        ssl: process.env.DATABASE_URL?.includes("aivencloud.com") || process.env.DB_HOST?.includes("aivencloud.com") ? { rejectUnauthorized: false } : undefined,
     },
 });
+
+console.log(`[DRIZZLE] Using database URL: ${process.env.DATABASE_URL ? 'CMD_LINE_URL' : 'DOTENV_URL'}`);
