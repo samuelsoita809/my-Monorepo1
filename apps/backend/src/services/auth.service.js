@@ -11,7 +11,7 @@ export const AuthService = {
     async register(email, password, role = "viewer") {
         const passwordHash = await bcrypt.hash(password, 12);
 
-        const [result] = await db.insert(users).values({
+        await db.insert(users).values({
             email,
             passwordHash,
             role

@@ -3,6 +3,8 @@ import { HeroHeader } from './components/Dashboard/HeroHeader';
 import { StatsGrid } from './components/Dashboard/StatsGrid';
 import { AssetStream } from './components/Dashboard/AssetStream';
 import { StepInfo, StepStock, StepSummary } from './components/Inventory/RegistrationSteps';
+import { useAuth } from './context/AuthContext';
+import AuthPage from './pages/AuthPage';
 
 // Lazy load the heavy form component
 const MultiStepForm = lazy(() => import('./components/Inventory/MultiStepForm'));
