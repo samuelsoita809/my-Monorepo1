@@ -54,7 +54,8 @@ app.use(chaosMiddleware);
 // Standardized Route Mounting
 const apiRouter = express.Router();
 apiRouter.use('/health', healthRoutes);
-apiRouter.use('/products', writeLimiter, productRoutes);
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/products', authMiddleware, writeLimiter, productRoutes);
 apiRouter.use('/chaos', chaosRoutes);
 
 app.use(`/api/${apiVersion}`, apiRouter);

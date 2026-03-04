@@ -16,6 +16,7 @@ const LoadingScreen = () => (
 );
 
 const App = () => {
+    const { user, token, loading, logout } = useAuth();
     const [products, setProducts] = useState([]);
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
@@ -29,9 +30,14 @@ const App = () => {
     ];
 
     const fetchProducts = async () => {
+        if (!token) return;
         try {
             const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
-            const res = await fetch(`${apiUrl}/products`);
+            const res = await fetch(`${apiUrl}/products`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             if (!res.ok) throw new Error('Failed to fetch');
             const data = await res.json();
             const sanitized = data.map(item => ({
@@ -50,7 +56,7 @@ const App = () => {
     };
 
     useEffect(() => {
-        fetchProducts();
+        if (token) fetchProducts();
 
         const observer = setInterval(() => {
             const latency = (Math.random() * 100 + 50).toFixed(2);
@@ -60,14 +66,17 @@ const App = () => {
         }, 10000);
 
         return () => clearInterval(observer);
-    }, [healthStatus]);
+    }, [healthStatus, token]);
 
     const handleOnboardingComplete = async (data) => {
         try {
             const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
             const res = await fetch(`${apiUrl}/products`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(data),
             });
             if (!res.ok) throw new Error('Registration failed');
@@ -84,6 +93,9 @@ const App = () => {
             const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
             const res = await fetch(`${apiUrl}/products/${id}`, {
                 method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             if (!res.ok) throw new Error('Decommissioning failed');
             fetchProducts();
@@ -97,7 +109,10 @@ const App = () => {
             const apiUrl = import.meta.env.VITE_API_URL || '/api/v1';
             const res = await fetch(`${apiUrl}/products/${id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(data),
             });
             if (!res.ok) throw new Error('Update failed');
@@ -107,6 +122,9 @@ const App = () => {
             alert('System Error: ' + err.message);
         }
     };
+
+    if (loading) return <div className="min-h-screen bg-[#020617] flex items-center justify-center"><LoadingScreen /></div>;
+    if (!user) return <AuthPage />;
 
     const stats = {
         total_inventory: products.length,
