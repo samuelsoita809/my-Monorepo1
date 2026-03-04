@@ -11,6 +11,11 @@ jest.unstable_mockModule("../src/services/product.service.js", () => ({
     }
 }));
 
+// Mock Auth Middleware to pass through
+jest.unstable_mockModule("../src/middleware/auth.middleware.js", () => ({
+    authMiddleware: jest.fn().mockImplementation((req, res, next) => next())
+}));
+
 // 2. Dynamically import modules AFTER mocking
 const { default: app } = await import("../src/index.js");
 

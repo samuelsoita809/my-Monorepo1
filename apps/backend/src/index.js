@@ -8,6 +8,8 @@ import { EVENTS, createLogSignal } from "@inventory/shared";
 import healthRoutes from "./routes/health.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import chaosRoutes from "./routes/chaos.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import { authMiddleware } from "./middleware/auth.middleware.js";
 import { chaosMiddleware } from "./controllers/chaos.controller.js";
 
 import { fileURLToPath } from 'url';
